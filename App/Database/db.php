@@ -5,7 +5,7 @@
         private static $host = 'localhost';
         private static $user = 'root';
         private static $password = '';
-        private static $database = 'library_db';
+        private static $database = 'kanban_app';
         
         public static function connect(){
             try{

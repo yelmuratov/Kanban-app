@@ -1,3 +1,8 @@
+<?php
+  use App\Helper\Helper;
+  Helper::checkAuth(); // Ensure that only guests can access the kanban page
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,7 +26,7 @@
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="index.html" class="brand-link">
+    <a href="/" class="brand-link">
       <img src="https://adminlte.io/themes/v3/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
       <span class="brand-text font-weight-light">AdminLTE 3</span>
     </a>
@@ -32,7 +37,7 @@
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <li class="nav-item">
-            <a href="index.html" class="nav-link">
+            <a href="/" class="nav-link">
               <i class="nav-icon fas fa-columns"></i>
               <p>
                 Dashboard

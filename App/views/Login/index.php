@@ -1,3 +1,9 @@
+<?php
+  use App\Helper\Helper;
+  Helper::checkGuest();
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,32 +29,46 @@
   <div class="card">
     <div class="card-body login-card-body">
       <p class="login-box-msg">Sign in to start your session</p>
+      <?php
+        if(isset($_SESSION['login_error'])) {
+          echo '<div class="alert alert-danger" role="alert">'.$_SESSION['login_error'].'</div>';
+          unset($_SESSION['login_error']);
+        }
 
-      <form action="../../index3.html" method="post">
-        <div class="input-group mb-3">
-          <input type="email" class="form-control" placeholder="Email">
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
-            </div>
-          </div>
-        </div>
-        <div class="input-group mb-3">
-          <input type="password" class="form-control" placeholder="Password">
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-lock"></span>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <!-- /.col -->
-          <div class="col-4">
-            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-          </div>
-          <!-- /.col -->
-        </div>
-      </form>
+        if(isset($_SESSION['register_success'])) {
+          echo '<div class="alert alert-success" role="alert">'.$_SESSION['register_success'].'</div>';
+          unset($_SESSION['register_success']);
+        }
+      ?>
+      <form action="/login" method="post">
+  <!-- Email Field -->
+  <div class="input-group mb-3">
+    <input type="email" class="form-control" placeholder="Email" name="email" required>
+    <div class="input-group-append">
+      <div class="input-group-text">
+        <span class="fas fa-envelope"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password Field -->
+  <div class="input-group mb-3">
+    <input type="password" class="form-control" placeholder="Password" name="password" required>
+    <div class="input-group-append">
+      <div class="input-group-text">
+        <span class="fas fa-lock"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign In Button -->
+  <div class="row">
+    <div class="col-4">
+      <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+    </div>
+  </div>
+</form>
+
       <!-- /.social-auth-links -->
       <p class="mb-0">
         <a href="/register" class="text-center">Register a new membership</a>

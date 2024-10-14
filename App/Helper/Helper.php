@@ -1,6 +1,7 @@
 <?php
 namespace App\Helper;
 
+
 define('VIEW_PATH', realpath(__DIR__ . '/../Views/'));
 
 class BaseController {
@@ -27,7 +28,14 @@ class Helper extends BaseController {
     //check if user is logged in
     public static function checkAuth() {
         if (!isset($_SESSION['user'])) {
-            self::redirect('/login');
+            header("Location: /login");
+        }
+    }
+
+    //check if user is not logged in
+    public static function checkGuest() {
+        if (isset($_SESSION['user'])) {
+            header("Location: /");
         }
     }
 

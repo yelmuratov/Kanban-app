@@ -10,6 +10,10 @@ class MainController extends Helper {
     public function index() {
         $this->render('index'); 
     }
+
+    public function kanban() {
+        $this->render('Kanban/index');
+    }
 }
 
 ?>
