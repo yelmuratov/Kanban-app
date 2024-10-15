@@ -14,4 +14,8 @@
     Route::post('/register',[AuthController::class,'register_user']);
     Route::get('/logout',[AuthController::class,'logout']);
 
+    // Kanban Routes
+    Route::post('/storeTask',[MainController::class,'storeTask']);
+    Route::post('/updateTaskStatus',[MainController::class,'updateTaskStatus']);
+
 ?>

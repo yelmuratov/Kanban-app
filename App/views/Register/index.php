@@ -28,7 +28,12 @@
   <div class="card">
     <div class="card-body register-card-body">
       <p class="login-box-msg">Register a new membership</p>
-
+      <?php
+        if (isset($_SESSION['register_error'])) {
+          echo '<div class="alert alert-danger">' . $_SESSION['register_error'] . '</div>';
+          unset($_SESSION['register_error']);
+        }
+      ?>
       <!-- Action set to /register_user, method POST -->
       <form action="/register" method="POST" id="registerForm" onsubmit="return validatePasswords()">
         <!-- Full Name -->

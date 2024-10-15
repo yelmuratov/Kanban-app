@@ -1,6 +1,6 @@
 <?php
   use App\Helper\Helper;
-  Helper::checkAuth(); // Ensure that only guests can access the kanban page
+  Helper::checkAuth(); 
 ?>
 
 <!DOCTYPE html>
