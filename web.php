@@ -5,6 +5,7 @@
 
     Route::get('/',[MainController::class,'index']);
     Route::get('/kanban',[MainController::class,'kanban']);
+    Route::post('/createComment',[MainController::class,'createComment']);
 
 
     // Auth Routes

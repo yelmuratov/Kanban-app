@@ -1,11 +1,8 @@
 <?php
 namespace App\Controllers;
-
-use App\Models\Author\Author;
-use App\Models\Book\Book;
-use App\Models\Genre\Genre;
 use App\Helper\Helper;
 use App\Models\Task\Task;
+use App\Models\Comment\Comment;
 
 class MainController extends Helper {
     public function index() {
@@ -92,6 +89,33 @@ class MainController extends Helper {
             echo json_encode(['message' => 'Failed to update task status.']);
         }
     }
+
+    //create comment for task
+    public function createComment() {
+        // Get the data from POST
+        $taskId = $_POST['task_id']; // Assuming task_id is being sent in the POST request
+        $userId = $_POST['user_id']; // Assuming user_id is also being sent in the POST request (this could be from the session)
+        $comment = $_POST['comment']; // The actual comment text
+    
+        // Make sure all necessary fields are available
+        if (empty($taskId) || empty($userId) || empty($comment)) {
+            return ['error' => 'All fields are required.'];
+        }
+    
+        $data = [
+            'task_id' => $taskId,
+            'user_id' => $userId,
+            'comment' => $comment,
+        ];
+
+        $commentResult = Comment::create($data);
+        if ($commentResult) {
+            echo json_encode(['message'=> 'Comment added successfully']);
+        } else {
+            echo json_encode(['message'=> 'Error adding comment']);
+        }
+    }
+    
     
 
 
