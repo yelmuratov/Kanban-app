@@ -72,58 +72,29 @@ class MainController extends Helper {
         }
     }
 
-    public function updateTaskStatus() {
-        // Check if CSRF token is valid
-        if (!isset($_POST['_csrf_token']) || !Helper::validateCsrfToken($_POST['_csrf_token'])) {
-            http_response_code(403);
-            echo json_encode(['error' => 'Invalid CSRF token']);
-            exit;
+    public function updateTaskStatus()
+    {
+        $taskId = $_POST['task_id'];
+        $newStatus = $_POST['status'];
+    
+        if (!in_array($newStatus, ['backlog', 'todo', 'in_progress', 'done'])) {
+            echo json_encode(['message' => 'Invalid status']);
+            return;
         }
     
-        // Validate the required parameters
-        if (isset($_POST['task_id']) && isset($_POST['status'])) {
-            $taskId = intval($_POST['task_id']);
-            $newStatus = $_POST['status'];
+        $data = ['status' => $newStatus];
     
-            // Validate status
-            $validStatuses = ['backlog', 'todo', 'in_progress', 'done'];
-            if (!in_array($newStatus, $validStatuses)) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Invalid status']);
-                exit;
-            }
+        $updateResult = Task::update($taskId, $data);
     
-            // Start a transaction for safety
-            DB::beginTransaction();
-            
-            try {
-                // Find the task and update its status
-                $task = Task::find($taskId);
-                if ($task) {
-                    $task->status = $newStatus;
-                    $task->save();
-    
-                    // Commit the transaction
-                    DB::commit();
-                    
-                    echo json_encode(['success' => true]);
-                } else {
-                    // Rollback if task is not found
-                    DB::rollBack();
-                    http_response_code(404);
-                    echo json_encode(['error' => 'Task not found']);
-                }
-            } catch (Exception $e) {
-                // Rollback on error
-                DB::rollBack();
-                http_response_code(500);
-                echo json_encode(['error' => 'An error occurred while updating the task status.']);
-            }
+        if ($updateResult) {
+            echo json_encode(['message' => 'Task status updated successfully.']);
         } else {
-            http_response_code(400);
-            echo json_encode(['error' => 'Invalid request']);
+            echo json_encode(['message' => 'Failed to update task status.']);
         }
     }
+    
+
+
     
     
     

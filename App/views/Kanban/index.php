@@ -2,8 +2,9 @@
   use App\Helper\Helper;
   use App\Models\User\User;
   use App\Models\Task\Task;
+
   $users = User::getAll();
-  Helper::checkAuth(); 
+  Helper::checkAuth();
 
   $tasks = Task::getAll();
 ?>
@@ -13,7 +14,6 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
   <title>AdminLTE 3 | Kanban Board</title>
 
   <!-- Google Font: Source Sans Pro -->
@@ -47,17 +47,13 @@
           <li class="nav-item">
             <a href="/" class="nav-link">
               <i class="nav-icon fas fa-columns"></i>
-              <p>
-                Dashboard
-              </p>
+              <p>Dashboard</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="/kanban" class="nav-link">
               <i class="nav-icon fas fa-columns"></i>
-              <p>
-                Kanban Board
-              </p>
+              <p>Kanban Board</p>
             </a>
           </li>
         </ul>
@@ -88,21 +84,17 @@
               </li>
             </ol>
           </div>
-          <?php
-            if($_SESSION['user'] && $_SESSION['user'][0]['role']=='admin') {
-              ?>
-              <div class="col-sm-6">
-                <button class="btn btn-primary float-right" data-toggle="modal" data-target="#createTaskModal">
-                  <i class="fas fa-plus"></i> New Task
-                </button>
-              </div>
-              <?php
-            }
-          ?>
+          <?php if ($_SESSION['user'] && $_SESSION['user'][0]['role'] == 'admin') { ?>
+            <div class="col-sm-6">
+              <button class="btn btn-primary float-right" data-toggle="modal" data-target="#createTaskModal">
+                <i class="fas fa-plus"></i> New Task
+              </button>
+            </div>
+          <?php } ?>
         </div>
       </div>
     </section>
-    
+
     <section class="content pb-3">
       <div class="container-fluid h-100">
         <!-- Backlog column -->
@@ -111,35 +103,28 @@
             <h3 class="card-title">Backlog</h3>
           </div>
           <div class="card-body">
-            <?php
-              foreach($tasks as $task) {
-                if($task['status'] == 'backlog') {
-                  ?>
-                  <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>">
-                   
-                    <div class="card-body">
-                      <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
-                      <?php if (!empty($task['img'])): ?>
-                        <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
-                      <?php endif; ?>
-                    </div>
-                    <div class="card-footer bg-transparent border-top-0">
-                      <small class="text-muted">Assigned to:
-                        <?php
-                          foreach($users as $user) {
-                            if($user['id'] == $task['user_id']) {
-                              echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-                              break;
-                            }
-                          }
-                        ?>
-                      </small>
-                    </div>
+            <?php foreach ($tasks as $task) {
+              if ($task['status'] == 'backlog') { ?>
+                <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>">
+                  <div class="card-body">
+                    <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                    <?php if (!empty($task['img'])) { ?>
+                      <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                    <?php } ?>
                   </div>
-                  <?php
-                }
-              }
-            ?>
+                  <div class="card-footer bg-transparent border-top-0">
+                    <small class="text-muted">Assigned to: 
+                      <?php foreach ($users as $user) {
+                        if ($user['id'] == $task['user_id']) {
+                          echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                          break;
+                        }
+                      } ?>
+                    </small>
+                  </div>
+                </div>
+              <?php }
+            } ?>
           </div>
         </div>
 
@@ -149,34 +134,28 @@
             <h3 class="card-title">To Do</h3>
           </div>
           <div class="card-body">
-            <?php
-              foreach($tasks as $task) {
-                if($task['status'] == 'todo') {
-                  ?>
-                  <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>">
-                    <div class="card-body">
-                      <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
-                      <?php if (!empty($task['img'])): ?>
-                        <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
-                      <?php endif; ?>
-                    </div>
-                    <div class="card-footer bg-transparent border-top-0">
-                      <small class="text-muted">Assigned to:
-                        <?php
-                          foreach($users as $user) {
-                            if($user['id'] == $task['user_id']) {
-                              echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-                              break;
-                            }
-                          }
-                        ?>
-                      </small>
-                    </div>
+            <?php foreach ($tasks as $task) {
+              if ($task['status'] == 'todo') { ?>
+                <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>">
+                  <div class="card-body">
+                    <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                    <?php if (!empty($task['img'])) { ?>
+                      <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                    <?php } ?>
                   </div>
-                  <?php
-                }
-              }
-            ?>
+                  <div class="card-footer bg-transparent border-top-0">
+                    <small class="text-muted">Assigned to: 
+                      <?php foreach ($users as $user) {
+                        if ($user['id'] == $task['user_id']) {
+                          echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                          break;
+                        }
+                      } ?>
+                    </small>
+                  </div>
+                </div>
+              <?php }
+            } ?>
           </div>
         </div>
 
@@ -186,34 +165,28 @@
             <h3 class="card-title">In Progress</h3>
           </div>
           <div class="card-body">
-            <?php
-              foreach($tasks as $task) {
-                if($task['status'] == 'in_progress') {
-                  ?>
-                  <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>">
-                    <div class="card-body">
-                      <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
-                      <?php if (!empty($task['img'])): ?>
-                        <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
-                      <?php endif; ?>
-                    </div>
-                    <div class="card-footer bg-transparent border-top-0">
-                      <small class="text-muted">Assigned to:
-                        <?php
-                          foreach($users as $user) {
-                            if($user['id'] == $task['user_id']) {
-                              echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-                              break;
-                            }
-                          }
-                        ?>
-                      </small>
-                    </div>
+            <?php foreach ($tasks as $task) {
+              if ($task['status'] == 'in_progress') { ?>
+                <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>">
+                  <div class="card-body">
+                    <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                    <?php if (!empty($task['img'])) { ?>
+                      <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                    <?php } ?>
                   </div>
-                  <?php
-                }
-              }
-            ?>
+                  <div class="card-footer bg-transparent border-top-0">
+                    <small class="text-muted">Assigned to: 
+                      <?php foreach ($users as $user) {
+                        if ($user['id'] == $task['user_id']) {
+                          echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                          break;
+                        }
+                      } ?>
+                    </small>
+                  </div>
+                </div>
+              <?php }
+            } ?>
           </div>
         </div>
 
@@ -223,34 +196,28 @@
             <h3 class="card-title">Done</h3>
           </div>
           <div class="card-body">
-            <?php
-              foreach($tasks as $task) {
-                if($task['status'] == 'done') {
-                  ?>
-                  <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>">
-                    <div class="card-body">
-                      <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
-                      <?php if (!empty($task['img'])): ?>
-                        <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
-                      <?php endif; ?>
-                    </div>
-                    <div class="card-footer bg-transparent border-top-0">
-                      <small class="text-muted">Assigned to:
-                        <?php
-                          foreach($users as $user) {
-                            if($user['id'] == $task['user_id']) {
-                              echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-                              break;
-                            }
-                          }
-                        ?>
-                      </small>
-                    </div>
+            <?php foreach ($tasks as $task) {
+              if ($task['status'] == 'done') { ?>
+                <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>">
+                  <div class="card-body">
+                    <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                    <?php if (!empty($task['img'])) { ?>
+                      <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                    <?php } ?>
                   </div>
-                  <?php
-                }
-              }
-            ?>
+                  <div class="card-footer bg-transparent border-top-0">
+                    <small class="text-muted">Assigned to: 
+                      <?php foreach ($users as $user) {
+                        if ($user['id'] == $task['user_id']) {
+                          echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                          break;
+                        }
+                      } ?>
+                    </small>
+                  </div>
+                </div>
+              <?php }
+            } ?>
           </div>
         </div>
       </div>
@@ -280,15 +247,10 @@
             <div class="form-group">
               <label for="taskAssignee">Assignee</label>
               <select class="form-control" id="taskAssignee" name="user_id" required>
-                <?php
-                  foreach($users as $user) {
-                   if($user['role'] == 'user') {
-                     ?>
-                     <option value="<?php echo $user['id']; ?>"><?php echo $user['name']; ?></option>
-                     <?php
-                   }
-                  }
-                ?>
+                <?php foreach ($users as $user) {
+                  if ($user['role'] == 'user') { ?>
+                    <option value="<?php echo $user['id']; ?>"><?php echo $user['name']; ?></option>
+                <?php } } ?>
               </select>
             </div>
             <div class="mb-3">
@@ -314,17 +276,16 @@
     </div>
   </div>
 
-
   <footer class="main-footer">
     <div class="float-right d-none d-sm-block">
       <b>Version</b> 3.2.0
     </div>
-    <strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights reserved.
+    <strong>Copyright &copy; 2014-2021 
+      <a href="https://adminlte.io">AdminLTE.io</a>.
+    </strong> All rights reserved.
   </footer>
 
-  <!-- Control Sidebar -->
-  <aside class="control-sidebar control-sidebar-dark">
-  </aside>
+  <aside class="control-sidebar control-sidebar-dark"></aside>
 </div>
 <!-- ./wrapper -->
 
@@ -361,23 +322,25 @@ $(function() {
 
     var taskId = id.replace('task', '');
 
+    console.log('Task ID: ' + taskId);
+
     $.ajax({
-      url: '/updateTaskStatus',
-      type: 'POST',
-      data: {
-        task_id: taskId,
-        status: newStatus
-      },
-      success: function(response) {
-        console.log('Task status updated successfully.');
-      },
-      error: function(xhr, status, error) {
-        alert('An error occurred while updating the task status.');
-      }
-    });
+  url: '/updateTaskStatus',
+  type: 'POST',
+  data: {
+    task_id: taskId,
+    status: newStatus
+  },
+  success: function(response) {
+    console.log(response);
+  },
+  error: function(xhr, status, error) {
+    alert('An error occurred while updating the task status: ' + error);
+  }
+});
+
   });
 });
 </script>
-
 </body>
 </html>
