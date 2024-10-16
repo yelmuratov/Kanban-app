@@ -49,28 +49,24 @@ class MainController extends Helper {
             if ($task) {
                 $_SESSION['task_success'] = 'Task created successfully';
                 header('Location: /kanban');
+                exit;
             } else {
                 $_SESSION['task_error'] = 'Task creation failed';
-                ?>
-                <script>
-                    alert('Task creation failed');
-                    window.location.href=history.back();
-                </script>
-                <?php
+                echo '<script>
+                        alert("Task creation failed");
+                        window.history.back();
+                      </script>';
             }
         } else {
             $_SESSION['task_error'] = 'Please fill all the fields';
-            ?>
-            <script>
-                alert('Please fill all the fields');
-                window.location.href=history.back();
-            </script>
-            <?php
+            echo '<script>
+                    alert("Please fill all the fields");
+                    window.history.back();
+                  </script>';
         }
     }
 
-    public function updateTaskStatus()
-    {
+    public function updateTaskStatus() {
         $taskId = $_POST['task_id'];
         $newStatus = $_POST['status'];
     
@@ -93,35 +89,34 @@ class MainController extends Helper {
     //create comment for task
     public function createComment() {
         // Get the data from POST
-        $taskId = $_POST['task_id']; // Assuming task_id is being sent in the POST request
-        $userId = $_POST['user_id']; // Assuming user_id is also being sent in the POST request (this could be from the session)
-        $comment = $_POST['comment']; // The actual comment text
-    
-        // Make sure all necessary fields are available
-        if (empty($taskId) || empty($userId) || empty($comment)) {
-            return ['error' => 'All fields are required.'];
-        }
-    
-        $data = [
-            'task_id' => $taskId,
-            'user_id' => $userId,
-            'comment' => $comment,
-        ];
+        $taskId = $_POST['task_id']; 
+        $userId = $_POST['user_id']; 
+        $comment = $_POST['comment'];
+     
+        
+        if (!empty($taskId) && !empty($userId) && !empty($comment)) {
+            try {
+                $data = [
+                    'task_id' => $taskId,
+                    'user_id' => $userId,
+                    'comment' => $comment,
+                    'created_at' => date('Y-m-d H:i:s') 
+                ];
 
-        $commentResult = Comment::create($data);
-        if ($commentResult) {
-            echo json_encode(['message'=> 'Comment added successfully']);
+                $commentCreated = Comment::create($data);
+                if ($commentCreated) {
+                    echo json_encode(['message' => 'Comment created successfully.']);
+                    header('Location: /kanban');
+                    exit;
+                } else {
+                    echo json_encode(['message' => 'Failed to create comment.']);
+                }
+            } catch (\Exception $e) {
+                echo json_encode(['message' => 'Failed to create comment. Error: ' . $e->getMessage()]);
+            }
         } else {
-            echo json_encode(['message'=> 'Error adding comment']);
+            echo json_encode(['message' => 'Please fill all the fields.']);
         }
     }
-    
-    
-
-
-    
-    
-    
 }
-
 ?>

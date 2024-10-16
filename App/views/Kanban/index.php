@@ -144,7 +144,7 @@ $comments = Comment::getAll();
                           ?>
                           <div class="comment mb-2">
                             <strong><?php echo $commentUser; ?>:</strong>
-                            <p><?php echo nl2br(htmlspecialchars($comment['content'], ENT_QUOTES, 'UTF-8')); ?></p>
+                            <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
                             <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
                           </div>
                           <?php
@@ -152,11 +152,13 @@ $comments = Comment::getAll();
                       }
                       ?>
                       <!-- Add Comment Form -->
-                      <form onsubmit="return false;">
+                      <form action="/createComment" method="POST">
+                        <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                        <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
                         <div class="form-group">
-                          <textarea class="form-control" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
+                          <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
                         </div>
-                        <button type="button" class="btn btn-sm btn-primary" onclick="addComment(<?php echo $task['id']; ?>)">Post Comment</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
                       </form>
                     </div>
                   </div>
@@ -207,7 +209,7 @@ $comments = Comment::getAll();
                               $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
                               break;
                             }
-                          }
+                          } 
                           ?>
                           <div class="comment mb-2">
                             <strong><?php echo $commentUser; ?>:</strong>
@@ -219,11 +221,13 @@ $comments = Comment::getAll();
                       }
                       ?>
                       <!-- Add Comment Form -->
-                      <form onsubmit="return false;">
+                      <form action="/createComment" method="POST">
+                        <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                        <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
                         <div class="form-group">
-                          <textarea class="form-control" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
+                          <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
                         </div>
-                        <button type="button" class="btn btn-sm btn-primary" onclick="addComment(<?php echo $task['id']; ?>)">Post Comment</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
                       </form>
                     </div>
                   </div>
@@ -278,7 +282,7 @@ $comments = Comment::getAll();
                           ?>
                           <div class="comment mb-2">
                             <strong><?php echo $commentUser; ?>:</strong>
-                            <p><?php echo nl2br(htmlspecialchars($comment['content'], ENT_QUOTES, 'UTF-8')); ?></p>
+                            <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
                             <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
                           </div>
                           <?php
@@ -286,11 +290,14 @@ $comments = Comment::getAll();
                       }
                       ?>
                       <!-- Add Comment Form -->
-                      <form onsubmit="return false;">
+                      <form action="/createComment" method="POST">
+                        <!-- hiddent input for task and user id -->
+                        <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                        <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
                         <div class="form-group">
-                          <textarea class="form-control" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
+                          <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
                         </div>
-                        <button type="button" class="btn btn-sm btn-primary" onclick="addComment(<?php echo $task['id']; ?>)">Post Comment</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
                       </form>
                     </div>
                   </div>
@@ -345,7 +352,7 @@ $comments = Comment::getAll();
                           ?>
                           <div class="comment mb-2">
                             <strong><?php echo $commentUser; ?>:</strong>
-                            <p><?php echo nl2br(htmlspecialchars($comment['content'], ENT_QUOTES, 'UTF-8')); ?></p>
+                            <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
                             <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
                           </div>
                           <?php
@@ -353,11 +360,13 @@ $comments = Comment::getAll();
                       }
                       ?>
                       <!-- Add Comment Form -->
-                      <form onsubmit="return false;">
+                      <form action="/createComment" method="POST">
+                      <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                      <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
                         <div class="form-group">
-                          <textarea class="form-control" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
+                          <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
                         </div>
-                        <button type="button" class="btn btn-sm btn-primary" onclick="addComment(<?php echo $task['id']; ?>)">Post Comment</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
                       </form>
                     </div>
                   </div>
