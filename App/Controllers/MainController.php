@@ -3,6 +3,7 @@ namespace App\Controllers;
 use App\Helper\Helper;
 use App\Models\Task\Task;
 use App\Models\Comment\Comment;
+use App\Models\User\User;
 
 class MainController extends Helper {
     public function index() {
@@ -116,6 +117,88 @@ class MainController extends Helper {
             }
         } else {
             echo json_encode(['message' => 'Please fill all the fields.']);
+        }
+    }
+
+    public function updateRole() {
+        $userId = $_POST['user_id'];
+        $newRole = $_POST['role'];
+    
+        if (!in_array($newRole, ['admin', 'user'])) {
+            echo json_encode(['message' => 'Invalid role']);
+            return;
+        }
+    
+        $data = ['role' => $newRole];
+    
+        $updateResult = User::update($userId, $data);
+    
+        if ($updateResult) {
+            ?>
+            <script>
+                alert('User role updated successfully.');
+                window.history.back();
+            </script>
+            <?php
+        } else {
+            ?>
+            <script>
+                alert('Failed to update user role.');
+                window.history.back();
+            </script>
+            <?php
+        }
+    }
+
+    public function updateStatus() {
+        $userId = $_POST['user_id'];
+        $newStatus = $_POST['status'];
+    
+        if (!in_array($newStatus, ['active', 'inactive'])) {
+            echo json_encode(['message' => 'Invalid status']);
+            return;
+        }
+    
+        $data = ['status' => $newStatus];
+    
+        $updateResult = User::update($userId, $data);
+    
+        if ($updateResult) {
+            ?>
+            <script>
+                alert('User status updated successfully.');
+                window.history.back();
+            </script>
+            <?php
+        } else {
+            ?>
+            <script>
+                alert('Failed to update user status.');
+                window.history.back();
+            </script>
+            <?php
+        }
+    }
+
+    public function deleteUser() {
+        $userId = $_GET['id'];
+    
+        $deleteResult = User::delete($userId);
+    
+        if ($deleteResult) {
+            ?>
+            <script>
+                alert('User deleted successfully.');
+                window.history.back();
+            </script>
+            <?php
+        } else {
+            ?>
+            <script>
+                alert('Failed to delete user.');
+                window.history.back();
+            </script>
+            <?php
         }
     }
 }

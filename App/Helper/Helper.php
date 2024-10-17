@@ -39,6 +39,15 @@ class Helper extends BaseController {
         }
     }
 
+    //check if user is admin
+    public static function checkAdmin() {
+        if ($_SESSION['user'][0]['role'] != 'admin') {
+            return false;
+        }else{
+            return true;
+        }
+    }
+
 
 
 

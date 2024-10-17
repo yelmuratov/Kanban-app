@@ -9,6 +9,9 @@ Helper::checkAuth();
 
 $tasks = Task::getAll();
 $comments = Comment::getAll();
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -46,12 +49,18 @@ $comments = Comment::getAll();
       <div class="sidebar">
         <nav class="mt-2">
           <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-            <li class="nav-item">
+            <?php
+              if($_SESSION['user'][0]['role'] == 'admin'){
+            ?>
+              <li class="nav-item">
               <a href="/" class="nav-link">
                 <i class="nav-icon fas fa-columns"></i>
                 <p>Dashboard</p>
               </a>
             </li>
+            <?php
+              }
+            ?>
             <li class="nav-item">
               <a href="/kanban" class="nav-link">
                 <i class="nav-icon fas fa-columns"></i>
@@ -64,7 +73,8 @@ $comments = Comment::getAll();
     </aside>
 
     <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper kanban">
+    <?php if($_SESSION['user'][0]['status'] == 'active'){ ?>
+      <div class="content-wrapper kanban">
       <section class="content-header">
         <div class="container-fluid">
           <div class="row">
@@ -78,8 +88,7 @@ $comments = Comment::getAll();
                     <i class="fas fa-user"></i> Profile
                   </a>
                   <div class="dropdown-menu dropdown-menu-right" aria-labelledby="profileDropdown">
-                    <a class="dropdown-item" href="#">Profile</a>
-                    <a class="dropdown-item" href="#">Settings</a>
+                    <a class="dropdown-item" ><?=$_SESSION['user'][0]["name"]?></a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="/logout">Logout</a>
                   </div>
@@ -106,7 +115,7 @@ $comments = Comment::getAll();
             </div>
             <div class="card-body">
               <?php foreach ($tasks as $task) {
-                if ($task['status'] == 'backlog') { ?>
+                if ($task['status'] == 'backlog' && $_SESSION['user'][0]['role']=="admin") { ?>
                   <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>" data-task-id="<?php echo $task['id']; ?>">
                     <div class="card-body">
                       <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
@@ -163,217 +172,450 @@ $comments = Comment::getAll();
                     </div>
                   </div>
                 <?php }
-              } ?>
+                else if($_SESSION['user'][0]['role']=="user"){
+                  if ($task['status'] == 'backlog' && $task['user_id']==$_SESSION['user'][0]['id']) { ?>
+                    <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>" data-task-id="<?php echo $task['id']; ?>">
+                      <div class="card-body">
+                        <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                        <?php if (!empty($task['img'])) { ?>
+                          <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                        <?php } ?>
+                        <button type="button" class="btn btn-sm btn-link toggle-comments" data-task-id="<?php echo $task['id']; ?>">
+                          <i class="fas fa-pencil-alt"></i> Comments
+                        </button>
+                      </div>
+                      <div class="card-footer bg-transparent border-top-0">
+                        <small class="text-muted">Assigned to:
+                          <?php foreach ($users as $user) {
+                            if ($user['id'] == $task['user_id']) {
+                              echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                              break;
+                            }
+                          } ?>
+                        </small>
+                      </div>
+                       <!-- Comments Section (Initially Hidden) -->
+                    <div class="card-footer comments-section" id="comments<?php echo $task['id']; ?>" style="display: none;">
+                      <h5>Comments</h5>
+                      <?php
+                      foreach ($comments as $comment) {
+                        if ($comment['task_id'] == $task['id']) {
+                          $commentUser = '';
+                          foreach ($users as $user) {
+                            if ($user['id'] == $comment['user_id']) {
+                              $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                              break;
+                            }
+                          }
+                          ?>
+                          <div class="comment mb-2">
+                            <strong><?php echo $commentUser; ?>:</strong>
+                            <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
+                            <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
+                          </div>
+                          <?php
+                        }
+                      }
+                      ?>
+                      <!-- Add Comment Form -->
+                      <form action="/createComment" method="POST">
+                        <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                        <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
+                        <div class="form-group">
+                          <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
+                      </form>
+                    </div>
+                  </div>
+                <?php }
+              }  }
+                ?>
             </div>
           </div>
 
           <!-- To Do column -->
-          <div class="card card-row card-primary" id="todo">
-            <div class="card-header">
-              <h3 class="card-title">To Do</h3>
-            </div>
-            <div class="card-body">
-              <?php foreach ($tasks as $task) {
-                if ($task['status'] == 'todo') { ?>
+              <div class="card card-row card-primary" id="todo">
+              <div class="card-header">
+                <h3 class="card-title">To Do</h3>
+              </div>
+              <div class="card-body">
+                <?php foreach ($tasks as $task) {
+                if ($task['status'] == 'todo' && $_SESSION['user'][0]['role'] == 'admin') { ?>
+                  <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>" data-task-id="<?php echo $task['id']; ?>">
+                  <div class="card-body">
+                    <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                    <?php if (!empty($task['img'])) { ?>
+                    <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                    <?php } ?>
+                    <button type="button" class="btn btn-sm btn-link toggle-comments" data-task-id="<?php echo $task['id']; ?>">
+                    <i class="fas fa-pencil-alt"></i> Comments
+                    </button>
+                  </div>
+                  <div class="card-footer bg-transparent border-top-0">
+                    <small class="text-muted">Assigned to:
+                    <?php foreach ($users as $user) {
+                      if ($user['id'] == $task['user_id']) {
+                      echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                      break;
+                      }
+                    } ?>
+                    </small>
+                  </div>
+
+                  <!-- Comments Section (Initially Hidden) -->
+                  <div class="card-footer comments-section" id="comments<?php echo $task['id']; ?>" style="display: none;">
+                    <h5>Comments</h5>
+                    <?php
+                    foreach ($comments as $comment) {
+                    if ($comment['task_id'] == $task['id']) {
+                      $commentUser = '';
+                      foreach ($users as $user) {
+                      if ($user['id'] == $comment['user_id']) {
+                        $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                        break;
+                      }
+                      }
+                      ?>
+                      <div class="comment mb-2">
+                      <strong><?php echo $commentUser; ?>:</strong>
+                      <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
+                      <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
+                      </div>
+                      <?php
+                    }
+                    }
+                    ?>
+                    <!-- Add Comment Form -->
+                    <form action="/createComment" method="POST">
+                    <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                    <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
+                    <div class="form-group">
+                      <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
+                    </form>
+                  </div>
+                  </div>
+                <?php }
+                else if ($_SESSION['user'][0]['role'] == 'user') {
+                  if ($task['status'] == 'todo' && $task['user_id'] == $_SESSION['user'][0]['id']) { ?>
                   <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>" data-task-id="<?php echo $task['id']; ?>">
                     <div class="card-body">
-                      <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
-                      <?php if (!empty($task['img'])) { ?>
-                        <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
-                      <?php } ?>
-                      <button type="button" class="btn btn-sm btn-link toggle-comments" data-task-id="<?php echo $task['id']; ?>">
-                        <i class="fas fa-pencil-alt"></i> Comments
-                      </button>
+                    <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                    <?php if (!empty($task['img'])) { ?>
+                      <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                    <?php } ?>
+                    <button type="button" class="btn btn-sm btn-link toggle-comments" data-task-id="<?php echo $task['id']; ?>">
+                      <i class="fas fa-pencil-alt"></i> Comments
+                    </button>
                     </div>
                     <div class="card-footer bg-transparent border-top-0">
-                      <small class="text-muted">Assigned to:
-                        <?php foreach ($users as $user) {
-                          if ($user['id'] == $task['user_id']) {
-                            echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-                            echo '<br>' . $task['created_at'];
-                            break;
-                          }
-                        } ?>
-                      </small>
+                    <small class="text-muted">Assigned to:
+                      <?php foreach ($users as $user) {
+                      if ($user['id'] == $task['user_id']) {
+                        echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                        break;
+                      }
+                      } ?>
+                    </small>
                     </div>
 
                     <!-- Comments Section (Initially Hidden) -->
                     <div class="card-footer comments-section" id="comments<?php echo $task['id']; ?>" style="display: none;">
-                      <h5>Comments</h5>
-                      <?php
-                      foreach ($comments as $comment) {
-                        if ($comment['task_id'] == $task['id']) {
-                          $commentUser = '';
-                          foreach ($users as $user) {
-                            if ($user['id'] == $comment['user_id']) {
-                              $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-                              break;
-                            }
-                          } 
-                          ?>
-                          <div class="comment mb-2">
-                            <strong><?php echo $commentUser; ?>:</strong>
-                            <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
-                            <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
-                          </div>
-                          <?php
+                    <h5>Comments</h5>
+                    <?php
+                    foreach ($comments as $comment) {
+                      if ($comment['task_id'] == $task['id']) {
+                      $commentUser = '';
+                      foreach ($users as $user) {
+                        if ($user['id'] == $comment['user_id']) {
+                        $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                        break;
                         }
                       }
                       ?>
-                      <!-- Add Comment Form -->
-                      <form action="/createComment" method="POST">
-                        <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
-                        <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
-                        <div class="form-group">
-                          <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
-                      </form>
+                      <div class="comment mb-2">
+                        <strong><?php echo $commentUser; ?>:</strong>
+                        <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
+                        <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
+                      </div>
+                      <?php
+                      }
+                    }
+                    ?>
+                    <!-- Add Comment Form -->
+                    <form action="/createComment" method="POST">
+                      <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                      <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
+                      <div class="form-group">
+                      <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
+                      </div>
+                      <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
+                    </form>
                     </div>
                   </div>
-                <?php }
-              } ?>
-            </div>
-          </div>
+                  <?php }
+                }
+                } ?>
+              </div>
+              </div>
 
           <!-- In Progress column -->
-          <div class="card card-row card-default" id="in_progress">
+            <div class="card card-row card-default" id="in_progress">
             <div class="card-header bg-info">
               <h3 class="card-title">In Progress</h3>
             </div>
             <div class="card-body">
               <?php foreach ($tasks as $task) {
-                if ($task['status'] == 'in_progress') { ?>
-                  <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>" data-task-id="<?php echo $task['id']; ?>">
-                    <div class="card-body">
-                      <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
-                      <?php if (!empty($task['img'])) { ?>
-                        <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
-                      <?php } ?>
-                      <button type="button" class="btn btn-sm btn-link toggle-comments" data-task-id="<?php echo $task['id']; ?>">
-                        <i class="fas fa-pencil-alt"></i> Comments
-                      </button>
-                    </div>
-                    <div class="card-footer bg-transparent border-top-0">
-                      <small class="text-muted">Assigned to:
-                        <?php foreach ($users as $user) {
-                          if ($user['id'] == $task['user_id']) {
-                            echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-                            echo '<br>Created at: ' . $task['created_at'];
-                            break;
-                          }
-                        } ?>
-                      </small>
-                    </div>
+              if ($task['status'] == 'in_progress' && $_SESSION['user'][0]['role'] == 'admin') { ?>
+                <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>" data-task-id="<?php echo $task['id']; ?>">
+                <div class="card-body">
+                  <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                  <?php if (!empty($task['img'])) { ?>
+                  <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                  <?php } ?>
+                  <button type="button" class="btn btn-sm btn-link toggle-comments" data-task-id="<?php echo $task['id']; ?>">
+                  <i class="fas fa-pencil-alt"></i> Comments
+                  </button>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                  <small class="text-muted">Assigned to:
+                  <?php foreach ($users as $user) {
+                    if ($user['id'] == $task['user_id']) {
+                    echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                    break;
+                    }
+                  } ?>
+                  </small>
+                </div>
 
-                    <!-- Comments Section (Initially Hidden) -->
-                    <div class="card-footer comments-section" id="comments<?php echo $task['id']; ?>" style="display: none;">
-                      <h5>Comments</h5>
-                      <?php
-                      foreach ($comments as $comment) {
-                        if ($comment['task_id'] == $task['id']) {
-                          $commentUser = '';
-                          foreach ($users as $user) {
-                            if ($user['id'] == $comment['user_id']) {
-                              $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-                              break;
-                            }
-                          }
-                          ?>
-                          <div class="comment mb-2">
-                            <strong><?php echo $commentUser; ?>:</strong>
-                            <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
-                            <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
-                          </div>
-                          <?php
-                        }
-                      }
-                      ?>
-                      <!-- Add Comment Form -->
-                      <form action="/createComment" method="POST">
-                        <!-- hiddent input for task and user id -->
-                        <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
-                        <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
-                        <div class="form-group">
-                          <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
-                      </form>
+                <!-- Comments Section (Initially Hidden) -->
+                <div class="card-footer comments-section" id="comments<?php echo $task['id']; ?>" style="display: none;">
+                  <h5>Comments</h5>
+                  <?php
+                  foreach ($comments as $comment) {
+                  if ($comment['task_id'] == $task['id']) {
+                    $commentUser = '';
+                    foreach ($users as $user) {
+                    if ($user['id'] == $comment['user_id']) {
+                      $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                      break;
+                    }
+                    }
+                    ?>
+                    <div class="comment mb-2">
+                    <strong><?php echo $commentUser; ?>:</strong>
+                    <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
+                    <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
                     </div>
+                    <?php
+                  }
+                  }
+                  ?>
+                  <!-- Add Comment Form -->
+                  <form action="/createComment" method="POST">
+                  <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                  <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
+                  <div class="form-group">
+                    <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
                   </div>
+                  <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
+                  </form>
+                </div>
+                </div>
+              <?php }
+              else if ($_SESSION['user'][0]['role'] == 'user') {
+                if ($task['status'] == 'in_progress' && $task['user_id'] == $_SESSION['user'][0]['id']) { ?>
+                <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>" data-task-id="<?php echo $task['id']; ?>">
+                  <div class="card-body">
+                  <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                  <?php if (!empty($task['img'])) { ?>
+                    <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                  <?php } ?>
+                  <button type="button" class="btn btn-sm btn-link toggle-comments" data-task-id="<?php echo $task['id']; ?>">
+                    <i class="fas fa-pencil-alt"></i> Comments
+                  </button>
+                  </div>
+                  <div class="card-footer bg-transparent border-top-0">
+                  <small class="text-muted">Assigned to:
+                    <?php foreach ($users as $user) {
+                    if ($user['id'] == $task['user_id']) {
+                      echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                      break;
+                    }
+                    } ?>
+                  </small>
+                  </div>
+
+                  <!-- Comments Section (Initially Hidden) -->
+                  <div class="card-footer comments-section" id="comments<?php echo $task['id']; ?>" style="display: none;">
+                  <h5>Comments</h5>
+                  <?php
+                  foreach ($comments as $comment) {
+                    if ($comment['task_id'] == $task['id']) {
+                    $commentUser = '';
+                    foreach ($users as $user) {
+                      if ($user['id'] == $comment['user_id']) {
+                      $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                      break;
+                      }
+                    }
+                    ?>
+                    <div class="comment mb-2">
+                      <strong><?php echo $commentUser; ?>:</strong>
+                      <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
+                      <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
+                    </div>
+                    <?php
+                    }
+                  }
+                  ?>
+                  <!-- Add Comment Form -->
+                  <form action="/createComment" method="POST">
+                    <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                    <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
+                    <div class="form-group">
+                    <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
+                  </form>
+                  </div>
+                </div>
                 <?php }
+              }
               } ?>
             </div>
-          </div>
+            </div>
 
           <!-- Done column -->
-          <div class="card card-row card-success" id="done">
+            <div class="card card-row card-success" id="done">
             <div class="card-header">
               <h3 class="card-title">Done</h3>
             </div>
             <div class="card-body">
               <?php foreach ($tasks as $task) {
-                if ($task['status'] == 'done') { ?>
-                  <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>" data-task-id="<?php echo $task['id']; ?>">
-                    <div class="card-body">
-                      <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
-                      <?php if (!empty($task['img'])) { ?>
-                        <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
-                      <?php } ?>
-                      <button type="button" class="btn btn-sm btn-link toggle-comments" data-task-id="<?php echo $task['id']; ?>">
-                        <i class="fas fa-pencil-alt"></i> Comments
-                      </button>
-                    </div>
-                    <div class="card-footer bg-transparent border-top-0">
-                      <small class="text-muted">Assigned to:
-                        <?php foreach ($users as $user) {
-                          if ($user['id'] == $task['user_id']) {
-                            echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-                            echo '<br>Created at: ' . $task['created_at'];
-                            break;
-                          }
-                        } ?>
-                      </small>
-                    </div>
+              if ($task['status'] == 'done' && $_SESSION['user'][0]['role'] == 'admin') { ?>
+                <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>" data-task-id="<?php echo $task['id']; ?>">
+                <div class="card-body">
+                  <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                  <?php if (!empty($task['img'])) { ?>
+                  <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                  <?php } ?>
+                  <button type="button" class="btn btn-sm btn-link toggle-comments" data-task-id="<?php echo $task['id']; ?>">
+                  <i class="fas fa-pencil-alt"></i> Comments
+                  </button>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                  <small class="text-muted">Assigned to:
+                  <?php foreach ($users as $user) {
+                    if ($user['id'] == $task['user_id']) {
+                    echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                    echo '<br>Created at: ' . $task['created_at'];
+                    break;
+                    }
+                  } ?>
+                  </small>
+                </div>
 
-                    <!-- Comments Section (Initially Hidden) -->
-                    <div class="card-footer comments-section" id="comments<?php echo $task['id']; ?>" style="display: none;">
-                      <h5>Comments</h5>
-                      <?php
-                      foreach ($comments as $comment) {
-                        if ($comment['task_id'] == $task['id']) {
-                          $commentUser = '';
-                          foreach ($users as $user) {
-                            if ($user['id'] == $comment['user_id']) {
-                              $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
-                              break;
-                            }
-                          }
-                          ?>
-                          <div class="comment mb-2">
-                            <strong><?php echo $commentUser; ?>:</strong>
-                            <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
-                            <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
-                          </div>
-                          <?php
-                        }
-                      }
-                      ?>
-                      <!-- Add Comment Form -->
-                      <form action="/createComment" method="POST">
-                      <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
-                      <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
-                        <div class="form-group">
-                          <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
-                      </form>
+                <!-- Comments Section (Initially Hidden) -->
+                <div class="card-footer comments-section" id="comments<?php echo $task['id']; ?>" style="display: none;">
+                  <h5>Comments</h5>
+                  <?php
+                  foreach ($comments as $comment) {
+                  if ($comment['task_id'] == $task['id']) {
+                    $commentUser = '';
+                    foreach ($users as $user) {
+                    if ($user['id'] == $comment['user_id']) {
+                      $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                      break;
+                    }
+                    }
+                    ?>
+                    <div class="comment mb-2">
+                    <strong><?php echo $commentUser; ?>:</strong>
+                    <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
+                    <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
                     </div>
+                    <?php
+                  }
+                  }
+                  ?>
+                  <!-- Add Comment Form -->
+                  <form action="/createComment" method="POST">
+                  <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                  <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
+                  <div class="form-group">
+                    <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
                   </div>
+                  <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
+                  </form>
+                </div>
+                </div>
+              <?php }
+              else if ($_SESSION['user'][0]['role'] == 'user') {
+                if ($task['status'] == 'done' && $task['user_id'] == $_SESSION['user'][0]['id']) { ?>
+                <div class="card mb-3 kanban-item" draggable="true" id="task<?php echo $task['id']; ?>" data-task-id="<?php echo $task['id']; ?>">
+                  <div class="card-body">
+                  <p class="card-text"><?php echo nl2br(htmlspecialchars($task['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                  <?php if (!empty($task['img'])) { ?>
+                    <img src="/uploads/<?php echo htmlspecialchars($task['img'], ENT_QUOTES, 'UTF-8'); ?>" alt="Task Image" class="img-fluid rounded mb-3">
+                  <?php } ?>
+                  <button type="button" class="btn btn-sm btn-link toggle-comments" data-task-id="<?php echo $task['id']; ?>">
+                    <i class="fas fa-pencil-alt"></i> Comments
+                  </button>
+                  </div>
+                  <div class="card-footer bg-transparent border-top-0">
+                  <small class="text-muted">Assigned to:
+                    <?php foreach ($users as $user) {
+                    if ($user['id'] == $task['user_id']) {
+                      echo htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                      echo '<br>Created at: ' . $task['created_at'];
+                      break;
+                    }
+                    } ?>
+                  </small>
+                  </div>
+
+                  <!-- Comments Section (Initially Hidden) -->
+                  <div class="card-footer comments-section" id="comments<?php echo $task['id']; ?>" style="display: none;">
+                  <h5>Comments</h5>
+                  <?php
+                  foreach ($comments as $comment) {
+                    if ($comment['task_id'] == $task['id']) {
+                    $commentUser = '';
+                    foreach ($users as $user) {
+                      if ($user['id'] == $comment['user_id']) {
+                      $commentUser = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                      break;
+                      }
+                    }
+                    ?>
+                    <div class="comment mb-2">
+                      <strong><?php echo $commentUser; ?>:</strong>
+                      <p><?php echo nl2br(htmlspecialchars($comment['comment'], ENT_QUOTES, 'UTF-8')); ?></p>
+                      <small class="text-muted"><?php echo htmlspecialchars($comment['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
+                    </div>
+                    <?php
+                    }
+                  }
+                  ?>
+                  <!-- Add Comment Form -->
+                  <form action="/createComment" method="POST">
+                    <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                    <input type="hidden" name="user_id" value="<?php echo $_SESSION['user'][0]['id']; ?>">
+                    <div class="form-group">
+                    <textarea class="form-control" name="comment" rows="2" placeholder="Add a comment..." id="commentInput<?php echo $task['id']; ?>"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">Post Comment</button>
+                  </form>
+                  </div>
+                </div>
                 <?php }
+              }
               } ?>
             </div>
-          </div>
+            </div>
 
           <!-- Create Task Modal -->
           <?php if ($_SESSION['user'] && $_SESSION['user'][0]['role'] == 'admin') { ?>
@@ -422,7 +664,43 @@ $comments = Comment::getAll();
           <?php } ?>
           <aside class="control-sidebar control-sidebar-dark"></aside>
         </div>
-        <!-- ./wrapper -->
+      </section>
+    </div>
+    <?php } else { ?>
+      <div class="row">
+          <div class="col-12">
+            <nav class="navbar navbar-expand-lg">
+              <a class="navbar-brand" href="#">Kanban Board</a>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-user"></i> <?=$_SESSION['user'][0]["name"]?>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="profileDropdown">
+                <a class="dropdown-item" href="#">Profile</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/logout">Logout</a>
+              </div>
+            </li>
+          </ul>
+              </div>
+            </nav>
+          </div>
+        </div>  
+      <div class="container">
+        <!-- alert message -->  
+      <div class="alert alert-danger mt-5" role="alert">
+          Your account is not active. Please contact the administrator.
+        </div>
+      </div>
+    <?php } ?>
+    
+  </div>
+
 
         <!-- jQuery -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>

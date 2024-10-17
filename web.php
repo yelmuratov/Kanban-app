@@ -7,6 +7,10 @@
     Route::get('/kanban',[MainController::class,'kanban']);
     Route::post('/createComment',[MainController::class,'createComment']);
 
+    Route::post('/update-role',[MainController::class,'updateRole']);
+    Route::post('/update-status',[MainController::class,'updateStatus']);
+    Route::get('/delete-user',[MainController::class,'deleteUser']);
+
 
     // Auth Routes
     Route::get('/login',[AuthController::class,'login']);
